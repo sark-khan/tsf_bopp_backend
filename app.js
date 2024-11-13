@@ -3,6 +3,7 @@ require("./db");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require('path');
 app.use(cors());
 const jwt= require("jsonwebtoken");
 // app.use(bodyParser.json());
@@ -33,6 +34,13 @@ const uploadFields = upload.fields([
 ]);
 // Middleware to parse JSON data in fields
 app.use(bodyParser.json());
+
+app.use('/admin-app', express.static(path.join(__dirname, 'build')));
+
+app.get('/admin-app/*', (req, res) => {
+  console.log("reached ehre");
+  return res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 app.post("/admin/api/login", async (req, res) => {
   try {
@@ -99,30 +107,39 @@ app.post('/admin/api/bopp-form/submit-form',
       for (const images of imageFiles){
         const filename= `${new Date()}_${images.originalname}`
         if(images.originalname.includes("extruder")){
+          extrudersObj.image=[];
           extrudersObj.image.push(filename);
         }
         else if(images.originalname.includes("dosing")){
+          dosingSection.image=[];
           dosingSection.image.push(filename);
         }
         else if(images.originalname.includes("knife")){
+          airKnife.image=[];
           airKnife.image.push(filename);
         }    
         else if(images.originalname.includes("casting")){
+          castingUnit.image=[];
           castingUnit.image.push(filename);
         }   
         else if(images.originalname.includes("mdo")){
+          mdo.image=[];
           mdo.image.push(filename);
         }  
         else if(images.originalname.includes("tdo")){
+          tdo.image=[];
           tdo.image.push(filename);
         }  
         else if(images.originalname.includes("winder")){
+          winder.image=[];
           winder.image.push(filename);
         } 
         else if(images.originalname.includes("prs")){
+          prs.image=[];
           prs.image.push(filename);
         } 
         else if(images.originalname.includes("physical")){
+          visualPhysicalDefects.image=[];
           visualPhysicalDefects.image.push(filename);
         }   
         uploadingData.push(uploadBufferToS3(images.buffer,filename));

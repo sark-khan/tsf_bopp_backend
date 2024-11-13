@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.e6c13ad2.css",
+    "main.js": "/static/js/main.dbd161e1.js",
+    "static/js/453.2b043b6e.chunk.js": "/static/js/453.2b043b6e.chunk.js",
+    "static/media/backgroundImage.jpg": "/static/media/backgroundImage.32227f72567e7ef7e9be.jpg",
+    "static/media/tsfLogo.jpg": "/static/media/tsfLogo.d4a95b294f9bab9f7368.jpg",
+    "index.html": "/index.html",
+    "main.e6c13ad2.css.map": "/static/css/main.e6c13ad2.css.map",
+    "main.dbd161e1.js.map": "/static/js/main.dbd161e1.js.map",
+    "453.2b043b6e.chunk.js.map": "/static/js/453.2b043b6e.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.dbd161e1.js"
+  ]
+}
