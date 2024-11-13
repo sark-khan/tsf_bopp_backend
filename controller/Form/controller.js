@@ -1,5 +1,5 @@
 const express = require("express");
-const { STATUS_CODES } = require("../../globalCOnstants");
+const { STATUS_CODES } = require("../../globalConstants");
 const router = express.Router();
 
 router.post("/add-form-data", async(req,res)=>{

@@ -19,7 +19,7 @@ SECRET = "SECRETCODETSFDATA"
 
 const multer = require('multer');
 const BoppForm = require("./Models/BoppForm");
-const { STATUS_CODES, ROLES } = require("./globalCOnstants");
+const { STATUS_CODES, ROLES } = require("./globalConstants");
 const boppUser = require("./Models/boppUser");
 const { uploadBufferToS3, generatePresignedUrl } = require("./aws-service");
 const storage = multer.memoryStorage();
@@ -64,7 +64,7 @@ async function sleep(ms) {
 }
 
 // Define a route to handle the form submission
-app.post('/api/bopp-form/submit-form',
+app.post('/admin/api/bopp-form/submit-form',
   uploadFields,
   // upload.array('files', 12),
   //  upload.fields([

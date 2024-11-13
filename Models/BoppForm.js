@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-// const { WEIGHT, SENSORS, CONDITION, YESNO, ONOFF } = require("../globalCOnstants");
+// const { WEIGHT, SENSORS, CONDITION, YESNO, ONOFF } = require("../globalConstants");
 const Schema = mongoose.Schema;
 
 const DateTimeSchema = new Schema({
