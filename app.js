@@ -91,6 +91,7 @@ app.post('/admin/api/bopp-form/submit-form',
       console.log({imageFiles, audioFiles, videoFiles})
       // console.log({...req.files})
       // Retrieve JSON data from fields
+      const organization= req.body.organization;
       const dateObj = JSON.parse(req.body.dateObj);
       const personnelObj = JSON.parse(req.body.personnelObj);
       const extrudersObj = JSON.parse(req.body.extrudersObj);
@@ -211,25 +212,12 @@ app.post('/admin/api/bopp-form/submit-form',
       await Promise.all(uploadingData);
 
 
-      await BoppForm.create({ dateObj, personnelObj, extrudersObj, dosingSection, airKnife, castingUnit, mdo, tdo, prs, winder, visualPhysicalDefects });
+      await BoppForm.create({organization, dateObj, personnelObj, extrudersObj, dosingSection, airKnife, castingUnit, mdo, tdo, prs, winder, visualPhysicalDefects });
       // Retrieve uploaded files
       
       
       // Log the received data and files (for debugging purposes)
-      console.log('Date Object:', dateObj);
-      console.log('Personnel Object:', personnelObj);
-      console.log('Extruders Object:', extrudersObj);
-      console.log('Dosing Section:', dosingSection);
-      console.log('Air Knife:', airKnife);
-      console.log('Casting Unit:', castingUnit);
-      console.log('MDO:', mdo);
-      console.log('TDO:', tdo);
-      console.log('PRS:', prs);
-      console.log('Winder:', winder);
-      console.log('Visual Physical Defects:', visualPhysicalDefects);
-      console.log('Uploaded Image Files:', imageFiles);
-      console.log('Uploaded Audio Files:', audioFiles);
-      console.log('Uploaded Video Files:', videoFiles);
+      
 
       // TODO: Process and store JSON data and files as needed
       // Example: save data to a database or cloud storage
@@ -255,13 +243,12 @@ app.get("/admin/api/get-logs", async (req, res) => {
 app.get("/admin/api/get-details",async(req,res)=>{
   try {
     const {docId}= req.query;
-    const docDetails= await BoppForm.findById(docId).lean();
+    const docDetails= await BoppForm.findById(docId,{createdAt:0, updatedAt:0, _id:0}).lean();
     if (!docDetails) {
       return res.status(404).json({ message: 'Document not found' });
     }
 
     updateWithPresignedUrls(docDetails);
-    
     return res.status(STATUS_CODES.OK).json({ docDetails });
   } catch (error) {
     console.error("Error occured while retriving logs", error);
