@@ -231,7 +231,7 @@ app.post('/admin/api/bopp-form/submit-form',
 
 app.get("/admin/api/get-logs", async (req, res) => {
   try {
-    const logsDetailsInfo = await BoppForm.find({}, { dateObj: 1, personnelObj: 1 }).sort({_id:-1}).lean();
+    const logsDetailsInfo = await BoppForm.find({}, { dateObj: 1, personnelObj: 1,organization:1, }).sort({_id:-1}).lean();
     console.log({ logsDetailsInfo });
     return res.status(STATUS_CODES.OK).json({ logsDetailsInfo });
   } catch (error) {
