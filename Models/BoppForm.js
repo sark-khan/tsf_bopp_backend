@@ -1,27 +1,27 @@
 const mongoose = require("mongoose");
-// const { WEIGHT, SENSORS, CONDITION, YESNO, ONOFF } = require("../globalConstants");
+// const { WEIGHT, SENSORS, CONDITION, YESNO, ONOFF } = require("pointpoint/globalConstants");
 const Schema = mongoose.Schema;
 
 
 const DateTimeSchema = new Schema({
-    date: { type: Date,  }, // This stores the full date and time.
-    time: { type: String,  }, // Alternatively, you could use a separate Date field.
+    date: { type: Date,  }, // This stores the full date and timepoint
+    time: { type: String,  }, // Alternatively, you could use a separate Date fieldpoint
     film_type: { type: String,  },
     l_s: { type: String, default: null },
     o_p: { type: String, default: null }
-});
+}, { _id: false });
 
 const PersonnelSchema = new Schema({
     shiftIncharge: { type: String,  },
     operator: { type: String,  },
-})
+}, { _id: false })
 const extrudersDetailsSchema = new Schema({
     any_abnormal_sound_yes: { type: Boolean },
     any_abnormal_sound_no: { type: Boolean },
     leakage_no: { type: Boolean },
     leakage_yes: { type: Boolean },
     remarks: { type: String }
-})
+}, { _id: false })
 
 const ExtrudersSchema = new Schema({
     main_ext_drive_melt__pump__filter: { type: extrudersDetailsSchema },
@@ -48,7 +48,7 @@ const ExtrudersSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-})
+}, { _id: false })
 
 
 
@@ -61,7 +61,7 @@ const dosingScetionSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-})
+}, { _id: false })
 
 const airKnifeSchema = new Schema({
     pressure: { type: String },
@@ -79,7 +79,7 @@ const airKnifeSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-})
+}, { _id: false })
 
 const castingSchema = new Schema({
     chill_roll_drying_unit_cylinder_pressure_chill_roll_deposition___400mm____: {
@@ -99,7 +99,7 @@ const castingSchema = new Schema({
     water_bath_skim_tank_level: { type: String },
     water_bath_tds_level: { type: String },
     die_melt_leakage_from_end_plates_of_gasket: { type: String },
-    die_exhasut_fan: { type: String },
+    die_exhaust_fan: { type: String },
     die_lip_deposition: { type: String,  },
     presence_of_die_line_in_cast_film: { type: String },
     water_observed_in_cast_film: { type: String },
@@ -118,7 +118,7 @@ const castingSchema = new Schema({
     audio: { type: String },
     video: { type: String }
 
-})
+}, { _id: false })
 
 
 const mdoSchema = new Schema({
@@ -132,23 +132,23 @@ const mdoSchema = new Schema({
     any_leakage_mdo_rolls__rotary_union: { condition: { type: String }, remarks: { type: String } },
     mdo_nip_roll_pressure_condition___values_in_bar___: {
         "1": { type: String },
-        "2.1/2": { type: String },
-        "2.2/3": { type: String },
-        "3.1/4": { type: String },
-        "3.2/5": { type: String },
-        "4.1/6": { type: String },
-        "4.2/7": { type: String },
-        "5/8": { type: String },
-        "6/9": { type: String },
-        "7/10": { type: String },
-        "8/11": { type: String },
+        "2point1by2": { type: String },
+        "2point2by3": { type: String },
+        "3point1by4": { type: String },
+        "3point2by5": { type: String },
+        "4point1by6": { type: String },
+        "4point2by7": { type: String },
+        "5by8": { type: String },
+        "6by9": { type: String },
+        "7by10": { type: String },
+        "8by11": { type: String },
         outlet: { type: String }
     },
     other1: { type: String },
     other2: { type: String },
     other3: { type: String },
     image: [{ type: String }]
-});
+}, { _id: false });
 
 const tdoSchema = new Schema({
     inlet_guide_roll_ok_o__s: { type: String},
@@ -220,7 +220,7 @@ const tdoSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-});
+}, { _id: false });
 
 
 const prsSchema = new Schema({
@@ -275,7 +275,7 @@ const prsSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-});
+}, { _id: false });
 
 const winderSchema = new Schema({
     spreader_roll_condition: {
@@ -312,7 +312,7 @@ const winderSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-});
+}, { _id: false });
 
 const visualPhysicalDefectsSchema = new Schema({
     cast_film: {
@@ -341,7 +341,7 @@ const visualPhysicalDefectsSchema = new Schema({
     }],
     audio: { type: String },
     video: { type: String }
-});
+}, { _id: false });
 
 
 
