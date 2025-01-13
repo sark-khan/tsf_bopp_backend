@@ -248,6 +248,45 @@ app.get("/admin/api/get-details",async(req,res)=>{
       return res.status(404).json({ message: 'Document not found' });
     }
 
+    docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound= docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";  
+
+    docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage= docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage_yes == true ? "yes":"no";
+    docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage_yes == true ? "yes":"no";  
+
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound_yes;
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound_no;
+
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_yes;
+    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_yes;
+    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage_yes;
+    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage_yes;
+    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage_yes;
+
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_no;
+    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_no;
+    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage_no;
+    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage_no;
+    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage_no;
+
     updateWithPresignedUrls(docDetails);
     return res.status(STATUS_CODES.OK).json({ docDetails });
   } catch (error) {
