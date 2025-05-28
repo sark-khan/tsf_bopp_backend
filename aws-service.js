@@ -12,7 +12,7 @@ const s3 = new AWS.S3();
 
 const uploadBufferToS3 = async (buffer, key) => {
   const params = {
-    Bucket: process.env.BUCKET_NAME, // Your S3 bucket name
+    Bucket: process.env.BUCKET_NAME ?? "tsfbopp", // Your S3 bucket name
     Key: key, // The name you want to save the file as in S3
     Body: buffer, // The buffer you want to upload
   };
