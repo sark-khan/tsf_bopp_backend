@@ -3,95 +3,102 @@ require("./db");
 const app = express();
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const path = require('path');
+const path = require("path");
 app.use(cors());
-const jwt= require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 // app.use(bodyParser.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
-  console.log("GOT HIT")
+  console.log("GOT HIT");
   // console.log(req)
-  return next()
-})
+  return next();
+});
 
-SECRET = "SECRETCODETSFDATA"
+SECRET = "SECRETCODETSFDATA";
 
-const multer = require('multer');
+const multer = require("multer");
 const BoppForm = require("./Models/BoppForm");
 const { STATUS_CODES, ROLES } = require("./globalConstants");
 const boppUser = require("./Models/boppUser");
 const { uploadBufferToS3, generatePresignedUrl } = require("./aws-service");
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });; // Define a folder for storing uploaded files
-
+const upload = multer({ storage: storage }); // Define a folder for storing uploaded files
 
 const uploadFields = upload.fields([
-  { name: 'image', maxCount: 50 },
-  { name: 'audio', maxCount: 10 },
-  { name: 'video', maxCount: 10 }
+  { name: "image", maxCount: 50 },
+  { name: "audio", maxCount: 10 },
+  { name: "video", maxCount: 10 },
 ]);
 // Middleware to parse JSON data in fields
 app.use(bodyParser.json());
 
-app.use('/admin-app', express.static(path.join(__dirname, 'build')));
+app.use("/admin-app", express.static(path.join(__dirname, "build")));
 
-app.get('/admin-app/*', (req, res) => {
+app.get("/admin-app/*", (req, res) => {
   console.log("reached ehre");
-  return res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  return res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 app.post("/admin/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const userDetails = await boppUser.findOne({ username }).lean();
-    
+
     if (!userDetails) {
-      return res.status(STATUS_CODES.NOT_FOUND).json({ message: "NO such user exists" });
+      return res
+        .status(STATUS_CODES.NOT_FOUND)
+        .json({ message: "NO such user exists" });
     }
     if (userDetails.password != password) {
-      return res.status(STATUS_CODES.NOT_AUTHORIZED).json({ message: "Password did not match" });
+      return res
+        .status(STATUS_CODES.NOT_AUTHORIZED)
+        .json({ message: "Password did not match" });
     }
     delete userDetails.password;
-    userDetails.isAdmin= userDetails.role == ROLES.ADMIN ? true : false
+    userDetails.isAdmin = userDetails.role == ROLES.ADMIN ? true : false;
     const tokenData = {
       username,
-      isAdmin: userDetails.role == ROLES.ADMIN ? true : false
-    }
+      isAdmin: userDetails.role == ROLES.ADMIN ? true : false,
+    };
     const token = jwt.sign(tokenData, SECRET);
-    return res.status(STATUS_CODES.OK).json({ message: "User logged in successfully", userDetails, token })
+    return res
+      .status(STATUS_CODES.OK)
+      .json({ message: "User logged in successfully", userDetails, token });
   } catch (error) {
     console.error("Error occured while loggin in User", error);
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Error occured while loggin in user", error });
+    return res
+      .status(STATUS_CODES.BAD_REQUEST)
+      .json({ message: "Error occured while loggin in user", error });
   }
-})
+});
 
 async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Define a route to handle the form submission
-app.post('/admin/api/bopp-form/submit-form',
+app.post(
+  "/admin/api/bopp-form/submit-form",
   uploadFields,
   // upload.array('files', 12),
   //  upload.fields([
   // { name: 'imageFiles', maxCount: 100 },
   // { name: 'audioFiles', maxCount: 10 },
   // { name: 'videoFiles', maxCount: 10 },
-  // ] 
+  // ]
   async (req, res) => {
     try {
-
       // ServerlessApplicationRepository
-      const imageFiles = req.files['image'] || [];
-      const audioFiles = req.files['audio'] || [];
-      const videoFiles = req.files['video'] || [];
-      const uploadingData=[];
-      console.log({imageFiles, audioFiles, videoFiles})
+      const imageFiles = req.files["image"] || [];
+      const audioFiles = req.files["audio"] || [];
+      const videoFiles = req.files["video"] || [];
+      const uploadingData = [];
+      console.log({ imageFiles, audioFiles, videoFiles });
       // console.log({...req.files})
       // Retrieve JSON data from fields
-      const organization= req.body.organization;
+      const organization = req.body.organization;
       const dateObj = JSON.parse(req.body.dateObj);
       const personnelObj = JSON.parse(req.body.personnelObj);
       const extrudersObj = JSON.parse(req.body.extrudersObj);
@@ -104,182 +111,274 @@ app.post('/admin/api/bopp-form/submit-form',
       const winder = JSON.parse(req.body.winder);
       const visualPhysicalDefects = JSON.parse(req.body.visualPhysicalDefects);
 
-
-      for (const images of imageFiles){
-        const filename= `${new Date()}_${images.originalname}`
-        if(images.originalname.includes("extruder")){
-          extrudersObj.image=[];
+      for (const images of imageFiles) {
+        const filename = `${new Date()}_${images.originalname}`;
+        if (images.originalname.includes("extruder")) {
+          extrudersObj.image = [];
           extrudersObj.image.push(filename);
-        }
-        else if(images.originalname.includes("dosing")){
-          dosingSection.image=[];
+        } else if (images.originalname.includes("dosing")) {
+          dosingSection.image = [];
           dosingSection.image.push(filename);
-        }
-        else if(images.originalname.includes("knife")){
-          airKnife.image=[];
+        } else if (images.originalname.includes("knife")) {
+          airKnife.image = [];
           airKnife.image.push(filename);
-        }    
-        else if(images.originalname.includes("casting")){
-          castingUnit.image=[];
+        } else if (images.originalname.includes("casting")) {
+          castingUnit.image = [];
           castingUnit.image.push(filename);
-        }   
-        else if(images.originalname.includes("mdo")){
-          mdo.image=[];
+        } else if (images.originalname.includes("mdo")) {
+          mdo.image = [];
           mdo.image.push(filename);
-        }  
-        else if(images.originalname.includes("tdo")){
-          tdo.image=[];
+        } else if (images.originalname.includes("tdo")) {
+          tdo.image = [];
           tdo.image.push(filename);
-        }  
-        else if(images.originalname.includes("winder")){
-          winder.image=[];
+        } else if (images.originalname.includes("winder")) {
+          winder.image = [];
           winder.image.push(filename);
-        } 
-        else if(images.originalname.includes("prs")){
-          prs.image=[];
+        } else if (images.originalname.includes("prs")) {
+          prs.image = [];
           prs.image.push(filename);
-        } 
-        else if(images.originalname.includes("physical")){
-          visualPhysicalDefects.image=[];
+        } else if (images.originalname.includes("physical")) {
+          visualPhysicalDefects.image = [];
           visualPhysicalDefects.image.push(filename);
-        }   
-        uploadingData.push(uploadBufferToS3(images.buffer,filename));
+        }
+        uploadingData.push(uploadBufferToS3(images.buffer, filename));
       }
 
-      for (const audios of audioFiles){
-        const filename= `${new Date()}_${audios.originalname}`
-        if(audios.originalname.includes("extruder")){
-          extrudersObj.audio=filename
+      for (const audios of audioFiles) {
+        const filename = `${new Date()}_${audios.originalname}`;
+        if (audios.originalname.includes("extruder")) {
+          extrudersObj.audio = filename;
+        } else if (audios.originalname.includes("dosing")) {
+          dosingSection.audio = filename;
+        } else if (audios.originalname.includes("knife")) {
+          airKnife.audio = filename;
+        } else if (audios.originalname.includes("casting")) {
+          castingUnit.audio = filename;
+        } else if (audios.originalname.includes("mdo")) {
+          mdo.audio = filename;
+        } else if (audios.originalname.includes("tdo")) {
+          tdo.audio = filename;
+        } else if (audios.originalname.includes("winder")) {
+          winder.audio = filename;
+        } else if (audios.originalname.includes("prs")) {
+          prs.audio = filename;
+        } else if (audios.originalname.includes("physical")) {
+          visualPhysicalDefects.audio = filename;
         }
-        else if(audios.originalname.includes("dosing")){
-          dosingSection.audio=filename
-        }
-        else if(audios.originalname.includes("knife")){
-          airKnife.audio=filename
-        }    
-        else if(audios.originalname.includes("casting")){
-          castingUnit.audio=filename
-        }   
-        else if(audios.originalname.includes("mdo")){
-          mdo.audio=filename
-        }  
-        else if(audios.originalname.includes("tdo")){
-          tdo.audio=filename
-        }  
-        else if(audios.originalname.includes("winder")){
-          winder.audio=filename
-        } 
-        else if(audios.originalname.includes("prs")){
-          prs.audio=filename
-        } 
-        else if(audios.originalname.includes("physical")){
-          visualPhysicalDefects.audio=filename
-        }
-        uploadingData.push(uploadBufferToS3(audios.buffer,filename));
+        uploadingData.push(uploadBufferToS3(audios.buffer, filename));
       }
 
-      for (const videos of videoFiles){
-        const filename= `${new Date()}_${videos.originalname}`
-        if(videos.originalname.includes("extruder")){
-          extrudersObj.video=filename
+      for (const videos of videoFiles) {
+        const filename = `${new Date()}_${videos.originalname}`;
+        if (videos.originalname.includes("extruder")) {
+          extrudersObj.video = filename;
+        } else if (videos.originalname.includes("dosing")) {
+          dosingSection.video = filename;
+        } else if (videos.originalname.includes("knife")) {
+          airKnife.video = filename;
+        } else if (videos.originalname.includes("casting")) {
+          castingUnit.video = filename;
+        } else if (videos.originalname.includes("mdo")) {
+          mdo.video = filename;
+        } else if (videos.originalname.includes("tdo")) {
+          tdo.video = filename;
+        } else if (videos.originalname.includes("winder")) {
+          winder.video = filename;
+        } else if (videos.originalname.includes("prs")) {
+          prs.video = filename;
+        } else if (videos.originalname.includes("physical")) {
+          visualPhysicalDefects.video = filename;
         }
-        else if(videos.originalname.includes("dosing")){
-          dosingSection.video=filename
-        }
-        else if(videos.originalname.includes("knife")){
-          airKnife.video=filename
-        }    
-        else if(videos.originalname.includes("casting")){
-          castingUnit.video=filename
-        }   
-        else if(videos.originalname.includes("mdo")){
-          mdo.video=filename
-        }  
-        else if(videos.originalname.includes("tdo")){
-          tdo.video=filename
-        }  
-        else if(videos.originalname.includes("winder")){
-          winder.video=filename
-        } 
-        else if(videos.originalname.includes("prs")){
-          prs.video=filename
-        } 
-        else if(videos.originalname.includes("physical")){
-          visualPhysicalDefects.video=filename
-        }
-        uploadingData.push(uploadBufferToS3(videos.buffer,filename));
+        uploadingData.push(uploadBufferToS3(videos.buffer, filename));
       }
       await Promise.all(uploadingData);
 
-
-      await BoppForm.create({organization, dateObj, personnelObj, extrudersObj, dosingSection, airKnife, castingUnit, mdo, tdo, prs, winder, visualPhysicalDefects });
+      await BoppForm.create({
+        organization,
+        dateObj,
+        personnelObj,
+        extrudersObj,
+        dosingSection,
+        airKnife,
+        castingUnit,
+        mdo,
+        tdo,
+        prs,
+        winder,
+        visualPhysicalDefects,
+      });
       // Retrieve uploaded files
-      
-      
+
       // Log the received data and files (for debugging purposes)
-      
 
       // TODO: Process and store JSON data and files as needed
       // Example: save data to a database or cloud storage
 
-      return res.status(200).json({ message: 'Form submitted successfully' });
+      return res.status(200).json({ message: "Form submitted successfully" });
     } catch (error) {
-      console.error('Error processing form data:', error);
-      res.status(500).json({ error: 'Failed to process form data' });
+      console.error("Error processing form data:", error);
+      res.status(500).json({ error: "Failed to process form data" });
     }
-  });
+  }
+);
 
 app.get("/admin/api/get-logs", async (req, res) => {
   try {
-    const logsDetailsInfo = await BoppForm.find({}, { dateObj: 1, personnelObj: 1,organization:1, }).sort({_id:-1}).lean();
-    console.log({ logsDetailsInfo });
-    return res.status(STATUS_CODES.OK).json({ logsDetailsInfo });
-  } catch (error) {
-    console.error("Error occured while retriving logs", error);
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Error occured while retriving logs", error });
-  }
-})
+    const { pageNo = 1, limit = 10, from, to, lineType } = req.query;
 
-app.get("/admin/api/get-details",async(req,res)=>{
-  try {
-    const {docId}= req.query;
-    const docDetails= await BoppForm.findById(docId,{createdAt:0, updatedAt:0, _id:0}).lean();
-    if (!docDetails) {
-      return res.status(404).json({ message: 'Document not found' });
+    const page = parseInt(pageNo);
+    const perPage = parseInt(limit);
+
+    // Build the filter object
+    const filter = {};
+
+    function parseDateString(dateStr) {
+      const parts = dateStr.split("/");
+      if (parts.length !== 3) return null;
+
+      const [day, month, year] = parts.map(Number);
+      if (!day || !month || !year) return null;
+
+      return new Date(year, month - 1, day); // JS Date: month is 0-indexed
     }
 
-    docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound= docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound= docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound_yes == true ? "yes":"no";  
+    if (from && to) {
+      const fromDate = parseDateString(from);
+      const toDate = parseDateString(to);
 
-    docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage= docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage_yes == true ? "yes":"no";
-    docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage= docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage_yes == true ? "yes":"no";  
+      if (
+        !fromDate ||
+        !toDate ||
+        isNaN(fromDate.getTime()) ||
+        isNaN(toDate.getTime())
+      ) {
+        return res
+          .status(400)
+          .json({ error: "Invalid date format in 'from' or 'to'" });
+      }
 
+      // Set end of day for 'to' date
+      toDate.setHours(23, 59, 59, 999);
 
-    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound_yes;
-    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound_yes;
-    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound_yes;
-    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound_yes;
-    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound_yes;
+      filter.createdAt = {
+        $gte: fromDate,
+        $lte: toDate,
+      };
+    }
 
-    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound_no;
-    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound_no;
-    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound_no;
-    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound_no;
-    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound_no;
+    if (lineType) {
+      filter.organization = lineType;
+    }
 
+    const logsDetailsInfo = await BoppForm.find(filter, {
+      dateObj: 1,
+      personnelObj: 1,
+      organization: 1,
+    })
+      .sort({ _id: -1 })
+      .skip((page - 1) * perPage)
+      .limit(perPage)
+      .lean();
 
-    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_yes;
+    const total = await BoppForm.countDocuments(filter);
+
+    return res.status(STATUS_CODES.OK).json({ logsDetailsInfo, total });
+  } catch (error) {
+    console.error("Error occured while retriving logs", error);
+    return res
+      .status(STATUS_CODES.BAD_REQUEST)
+      .json({ message: "Error occured while retriving logs", error });
+  }
+});
+
+app.get("/admin/api/get-details", async (req, res) => {
+  try {
+    const { docId } = req.query;
+    const docDetails = await BoppForm.findById(docId, {
+      createdAt: 0,
+      updatedAt: 0,
+      _id: 0,
+    }).lean();
+    if (!docDetails) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    docDetails.extrudersObj.main_ext_drive_melt__pump__filter.any_abnormal_sound =
+      docDetails.extrudersObj.main_ext_drive_melt__pump__filter
+        .any_abnormal_sound_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_1__melt_pump__filter.any_abnormal_sound =
+      docDetails.extrudersObj.co_ext_1__melt_pump__filter
+        .any_abnormal_sound_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_2__melt_pump__filter.any_abnormal_sound =
+      docDetails.extrudersObj.co_ext_2__melt_pump__filter
+        .any_abnormal_sound_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_3__melt_pump__filter.any_abnormal_sound =
+      docDetails.extrudersObj.co_ext_3__melt_pump__filter
+        .any_abnormal_sound_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_4__melt_pump__filter.any_abnormal_sound =
+      docDetails.extrudersObj.co_ext_4__melt_pump__filter
+        .any_abnormal_sound_yes == true
+        ? "yes"
+        : "no";
+
+    docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage =
+      docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_yes ==
+      true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage =
+      docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage =
+      docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage =
+      docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage_yes == true
+        ? "yes"
+        : "no";
+    docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage =
+      docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage_yes == true
+        ? "yes"
+        : "no";
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter
+      .any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter
+      .any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter
+      .any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter
+      .any_abnormal_sound_yes;
+    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter
+      .any_abnormal_sound_yes;
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter
+      .any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_1__melt_pump__filter
+      .any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_2__melt_pump__filter
+      .any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_3__melt_pump__filter
+      .any_abnormal_sound_no;
+    delete docDetails.extrudersObj.co_ext_4__melt_pump__filter
+      .any_abnormal_sound_no;
+
+    delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter
+      .leakage_yes;
     delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_yes;
     delete docDetails.extrudersObj.co_ext_2__melt_pump__filter.leakage_yes;
     delete docDetails.extrudersObj.co_ext_3__melt_pump__filter.leakage_yes;
     delete docDetails.extrudersObj.co_ext_4__melt_pump__filter.leakage_yes;
-
 
     delete docDetails.extrudersObj.main_ext_drive_melt__pump__filter.leakage_no;
     delete docDetails.extrudersObj.co_ext_1__melt_pump__filter.leakage_no;
@@ -291,37 +390,35 @@ app.get("/admin/api/get-details",async(req,res)=>{
     return res.status(STATUS_CODES.OK).json({ docDetails });
   } catch (error) {
     console.error("Error occured while retriving logs", error);
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ message: "Error occured while retriving logs", error });
+    return res
+      .status(STATUS_CODES.BAD_REQUEST)
+      .json({ message: "Error occured while retriving logs", error });
   }
-})
-
-
+});
 
 const updateWithPresignedUrls = (obj) => {
   for (const key in obj) {
-    if (Array.isArray(obj[key]) && key === 'image') {
+    if (Array.isArray(obj[key]) && key === "image") {
       // Update each image URL in the array with a presigned URL
       obj[key] = obj[key].map((img) => generatePresignedUrl(img));
-    } else if (key === 'audio' && obj[key]) {
+    } else if (key === "audio" && obj[key]) {
       // Update audio URL with a presigned URL
       obj[key] = generatePresignedUrl(obj[key]);
-    } else if (key === 'video' && obj[key]) {
+    } else if (key === "video" && obj[key]) {
       // Update video URL with a presigned URL
       obj[key] = generatePresignedUrl(obj[key]);
-    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+    } else if (typeof obj[key] === "object" && obj[key] !== null) {
       // Recursively call the function for nested objects
       updateWithPresignedUrls(obj[key]);
     }
   }
 };
 
-
-
 // Start the server
 const port = process.env.PORT;
 console.log({ port });
 
-const server =app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is listening at http://localhost:${port}`);
 });
 server.timeout = 240000;
