@@ -233,38 +233,39 @@ app.get("/admin/api/get-logs", async (req, res) => {
     const filter = {};
 
     function parseDateString(dateStr) {
-      const parts = dateStr.split("/");
-      if (parts.length !== 3) return null;
+  const parts = dateStr.split("/");
+  if (parts.length !== 3) return null;
 
-      const [day, month, year] = parts.map(Number);
-      if (!day || !month || !year) return null;
+  const [month, day, year] = parts.map(Number); // MM/DD/YYYY
+  if (!day || !month || !year) return null;
 
-      return new Date(year, month - 1, day); // JS Date: month is 0-indexed
-    }
+  return new Date(year, month - 1, day); // JS Date: month is 0-indexed
+}
 
-    if (from && to) {
-      const fromDate = parseDateString(from);
-      const toDate = parseDateString(to);
+if (from && to) {
+  const fromDate = parseDateString(from);
+  const toDate = parseDateString(to);
 
-      if (
-        !fromDate ||
-        !toDate ||
-        isNaN(fromDate.getTime()) ||
-        isNaN(toDate.getTime())
-      ) {
-        return res
-          .status(400)
-          .json({ error: "Invalid date format in 'from' or 'to'" });
-      }
+  if (
+    !fromDate ||
+    !toDate ||
+    isNaN(fromDate.getTime()) ||
+    isNaN(toDate.getTime())
+  ) {
+    return res
+      .status(400)
+      .json({ error: "Invalid date format in 'from' or 'to'" });
+  }
 
-      // Set end of day for 'to' date
-      toDate.setHours(23, 59, 59, 999);
+  // Set end of day for 'to' date
+  toDate.setHours(23, 59, 59, 999);
 
-      filter.createdAt = {
-        $gte: fromDate,
-        $lte: toDate,
-      };
-    }
+  filter.createdAt = {
+    $gte: fromDate,
+    $lte: toDate,
+  };
+}
+
 
     if (lineType) {
       filter.organization = lineType;
